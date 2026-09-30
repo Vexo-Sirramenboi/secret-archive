@@ -1,0 +1,321 @@
+name: Update Secret Archive
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  archive:
+    runs-on: ubuntu-latest
+
+    steps:
+      # ------------------------------------------------------------
+      # CHECK OUT SECRET-ARCHIVE
+      # ------------------------------------------------------------
+
+      - name: Checkout secret-archive
+        uses: actions/checkout@v4
+        with:
+          path: archive
+
+      # ------------------------------------------------------------
+      # CREATE DIRECTORIES
+      # ------------------------------------------------------------
+
+      - name: Create directories
+        shell: bash
+        run: |
+          mkdir -p repos
+          mkdir -p archive-build
+
+      # ------------------------------------------------------------
+      # CLONE ALL SECRET-STUFF REPOSITORIES
+      # ------------------------------------------------------------
+
+      - name: Clone secret-stuff
+        uses: actions/checkout@v4
+        with:
+          repository: Vexo-Sirramenboi/secret-stuff
+          ref: main
+          path: repos/secret-stuff
+          fetch-depth: 1
+
+      - name: Clone secret-stuff-v2
+        uses: actions/checkout@v4
+        with:
+          repository: Vexo-Sirramenboi/secret-stuff-v2
+          ref: main
+          path: repos/secret-stuff-v2
+          fetch-depth: 1
+
+      - name: Clone secret-stuff-v3
+        uses: actions/checkout@v4
+        with:
+          repository: Vexo-Sirramenboi/secret-stuff-v3
+          ref: main
+          path: repos/secret-stuff-v3
+          fetch-depth: 1
+
+      - name: Clone secret-stuff-v4
+        uses: actions/checkout@v4
+        with:
+          repository: Vexo-Sirramenboi/secret-stuff-v4
+          ref: main
+          path: repos/secret-stuff-v4
+          fetch-depth: 1
+
+      - name: Clone secret-stuff-v5
+        uses: actions/checkout@v4
+        with:
+          repository: Vexo-Sirramenboi/secret-stuff-v5
+          ref: main
+          path: repos/secret-stuff-v5
+          fetch-depth: 1
+
+      - name: Clone secret-stuff-v6
+        uses: actions/checkout@v4
+        with:
+          repository: Vexo-Sirramenboi/secret-stuff-v6
+          ref: main
+          path: repos/secret-stuff-v6
+          fetch-depth: 1
+
+      - name: Clone secret-stuff-v7
+        uses: actions/checkout@v4
+        with:
+          repository: Vexo-Sirramenboi/secret-stuff-v7
+          ref: main
+          path: repos/secret-stuff-v7
+          fetch-depth: 1
+
+      - name: Clone secret-stuff-v8
+        uses: actions/checkout@v4
+        with:
+          repository: Vexo-Sirramenboi/secret-stuff-v8
+          ref: main
+          path: repos/secret-stuff-v8
+          fetch-depth: 1
+
+      - name: Clone secret-stuff-v9
+        uses: actions/checkout@v4
+        with:
+          repository: Vexo-Sirramenboi/secret-stuff-v9
+          ref: main
+          path: repos/secret-stuff-v9
+          fetch-depth: 1
+
+      - name: Clone secret-stuff-v10
+        uses: actions/checkout@v4
+        with:
+          repository: Vexo-Sirramenboi/secret-stuff-v10
+          ref: main
+          path: repos/secret-stuff-v10
+          fetch-depth: 1
+
+      - name: Clone secret-stuff-v11
+        uses: actions/checkout@v4
+        with:
+          repository: Vexo-Sirramenboi/secret-stuff-v11
+          ref: main
+          path: repos/secret-stuff-v11
+          fetch-depth: 1
+
+      - name: Clone secret-stuff-v12
+        uses: actions/checkout@v4
+        with:
+          repository: Vexo-Sirramenboi/secret-stuff-v12
+          ref: main
+          path: repos/secret-stuff-v12
+          fetch-depth: 1
+
+      - name: Clone secret-stuff-v13
+        uses: actions/checkout@v4
+        with:
+          repository: Vexo-Sirramenboi/secret-stuff-v13
+          ref: main
+          path: repos/secret-stuff-v13
+          fetch-depth: 1
+
+      # ------------------------------------------------------------
+      # COPY INDEX.HTML FILES INTO SECRET-ARCHIVE
+      # ------------------------------------------------------------
+
+      - name: Update archived index.html files
+        shell: bash
+        run: |
+          set -e
+
+          repos=(
+            "secret-stuff"
+            "secret-stuff-v2"
+            "secret-stuff-v3"
+            "secret-stuff-v4"
+            "secret-stuff-v5"
+            "secret-stuff-v6"
+            "secret-stuff-v7"
+            "secret-stuff-v8"
+            "secret-stuff-v9"
+            "secret-stuff-v10"
+            "secret-stuff-v11"
+            "secret-stuff-v12"
+            "secret-stuff-v13"
+          )
+
+          for repo in "${repos[@]}"; do
+            echo "Processing $repo..."
+
+            source="repos/$repo/index.html"
+            destination="archive/$repo"
+
+            mkdir -p "$destination"
+
+            if [ ! -f "$source" ]; then
+              echo "ERROR: $repo does not contain index.html in its main branch."
+              exit 1
+            fi
+
+            cp "$source" "$destination/index.html"
+
+            echo "$repo/index.html updated."
+          done
+
+      # ------------------------------------------------------------
+      # REMOVE GIT METADATA FROM REPOSITORIES
+      # ------------------------------------------------------------
+
+      - name: Remove Git metadata
+        shell: bash
+        run: |
+          find repos -type d -name ".git" -prune -exec rm -rf {} +
+
+      # ------------------------------------------------------------
+      # CREATE COMPLETE ARCHIVE
+      # ------------------------------------------------------------
+
+      - name: Create complete ZIP archive
+        shell: bash
+        run: |
+          set -e
+
+          rm -rf archive-build/secret-archive-all
+          mkdir -p archive-build/secret-archive-all
+
+          repos=(
+            "secret-stuff"
+            "secret-stuff-v2"
+            "secret-stuff-v3"
+            "secret-stuff-v4"
+            "secret-stuff-v5"
+            "secret-stuff-v6"
+            "secret-stuff-v7"
+            "secret-stuff-v8"
+            "secret-stuff-v9"
+            "secret-stuff-v10"
+            "secret-stuff-v11"
+            "secret-stuff-v12"
+            "secret-stuff-v13"
+          )
+
+          for repo in "${repos[@]}"; do
+            echo "Adding $repo to archive..."
+
+            cp -r "repos/$repo" \
+              "archive-build/secret-archive-all/$repo"
+          done
+
+          cd archive-build
+
+          zip -r \
+            ../secret-archive-all.zip \
+            secret-archive-all
+
+          cd ..
+
+          echo "Archive created:"
+          ls -lh secret-archive-all.zip
+
+      # ------------------------------------------------------------
+      # SHOW WHAT WAS CREATED
+      # ------------------------------------------------------------
+
+      - name: Verify archive
+        shell: bash
+        run: |
+          echo "Archive contents:"
+          unzip -l secret-archive-all.zip
+
+          echo
+          echo "Archived index files:"
+          find archive -name "index.html" -print
+
+      # ------------------------------------------------------------
+      # COMMIT INDEX FILES TO MAIN
+      # ------------------------------------------------------------
+
+      - name: Commit updated index files
+        shell: bash
+        working-directory: archive
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add \
+            secret-stuff \
+            secret-stuff-v2 \
+            secret-stuff-v3 \
+            secret-stuff-v4 \
+            secret-stuff-v5 \
+            secret-stuff-v6 \
+            secret-stuff-v7 \
+            secret-stuff-v8 \
+            secret-stuff-v9 \
+            secret-stuff-v10 \
+            secret-stuff-v11 \
+            secret-stuff-v12 \
+            secret-stuff-v13
+
+          if git diff --cached --quiet; then
+            echo "No index.html changes detected."
+          else
+            git commit -m "Update archived launcher index files"
+            git push origin main
+          fi
+
+      # ------------------------------------------------------------
+      # CREATE RELEASE
+      # ------------------------------------------------------------
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: "archive-${{ github.run_number }}"
+          name: "Secret Archive ${{ github.run_number }}"
+          body: |
+            # Secret Archive
+
+            Complete archive of the current main branches of:
+
+            - secret-stuff
+            - secret-stuff-v2
+            - secret-stuff-v3
+            - secret-stuff-v4
+            - secret-stuff-v5
+            - secret-stuff-v6
+            - secret-stuff-v7
+            - secret-stuff-v8
+            - secret-stuff-v9
+            - secret-stuff-v10
+            - secret-stuff-v11
+            - secret-stuff-v12
+            - secret-stuff-v13
+
+            The archive contains the complete contents of each repository.
+
+            The `secret-archive` main branch also contains the current `index.html` from each repository in its corresponding folder.
+          files: |
+            secret-archive-all.zip
+          make_latest: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
